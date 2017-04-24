@@ -2,55 +2,56 @@
 public class KMP {
 
 	public static void main(String[] args) {
-		String s = "xxax";
-		String t = "xa";
-		System.out.println(Index_KMP(s, t));
+		String s = "abacababc";
+		String p = "abab";
+		System.out.println(Index_KMP(s, p));
 	}
 	
-	public static int[] next(String s) {
-		int[] next = new int[s.length()];
-		int i = 0, j = -1;
-		next[0] = -1;
+	//优化过后的next数组求法 
+	public static int[] next(String p) {
+		int[] next = new int[p.length()];
+		int k = -1, j = 0;
+		next[0] = -1;		//	初值为-1	
 		
-		while(i < s.length() - 1) {
-			if(j == -1 || s.charAt(i) == s.charAt(j)) {  // 判断的先后顺序不能调换
-				i++;
+		while(j < p.length() - 1) { 
+			//	p[k]表示字符串的前缀，p[j]表示字符串的后缀
+			if(k == -1 || p.charAt(k) == p.charAt(j)) {  // 判断的先后顺序不能调换
+				k++;
 				j++;
-				if(s.charAt(i) == s.charAt(j)) {   // 对KMP算法的优化
-					next[i] = next[j];
-				}
-				else {
-					next[i] = j;
-				}
+				//	后面即是求next[j+1]的过程
+				if(p.charAt(k) == p.charAt(j)) 			//  此处等价于if(p[j] == p[ next[j] ])
+					//	因为不能出现p[j] = p[ next[j] ]，所以当出现时需要继续递归，k = next[k] = next[next[k]]
+					next[j] = next[k];					//  此处等价于next[j] = next[ next[j] ]
+				else	
+					next[j] = k;
 			}
 			else {
-				j = next[j];         //  若字符不相等进行回溯，保证s[0]~s[j]与s[i-j]~s[i]是匹配的
+				k = next[k];         
 			}
 		}
 	
 		return next;
 	}
 	
-	public static int Index_KMP(String S, String T) {
-		int i = 0, j = 0;   //  i用于表示主串的下标值，j用于表示子串的下标值
-		int[] next = next(T);
+	public static int Index_KMP(String S, String P) {
+		int i = 0, j = 0;
+		int[] next = next(P);
 		
-		while(i < S.length() && j < T.length()) {   
-			if(j == -1 || S.charAt(i) == T.charAt(j)) {   //  两字符相等则继续
+		while(i < S.length() && j < P.length()) {	  
+			if(j == -1 || S.charAt(i) == P.charAt(j)) {		//	如果j = -1，或者当前字符匹配成功（即S[i] == P[j]），都令i++，j++. 注意：这里判断顺序不能调换！ 
 				i++;
 				j++;
 			}
-			else {
-				j = next[j];  //  j回溯退回合适的位置开始重新匹配,i的值不变
-			}
+			else
+				//	如果j != -1，且当前字符匹配失败（即S[i] != P[j]），则令 i 不变，j = next[j]      
+	            //	next[j]即为j所对应的next值，效果为进行回溯        
+				j = next[j];
 		}
 		
-		if(j == T.length()) {    //  结果匹配，则返回第一次匹配的数组下标
+		if(j == P.length())
 			return i - j;
-		}
-		else {
+		else 
 			return -1;
-		}
 	}
-
+	
 }
